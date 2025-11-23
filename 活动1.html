@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>活动1</title>
+    <title>测试你的井字棋"段位"</title>
     <style>
       body {
         font-family: "Arial", sans-serif;
@@ -50,6 +50,60 @@
         min-height: 1.5em;
         font-weight: bold;
         color: #334e68;
+      }
+
+      .game-info {
+        display: flex;
+        justify-content: space-around;
+        margin: 15px 0;
+        padding: 10px;
+        background-color: #f7fafc;
+        border-radius: 8px;
+      }
+
+      .info-item {
+        text-align: center;
+      }
+
+      .info-label {
+        font-size: 0.9em;
+        color: #718096;
+        margin-bottom: 5px;
+      }
+
+      .info-value {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #2b3e50;
+      }
+
+      .timer {
+        font-size: 1.2em;
+        color: #e53e3e;
+        font-weight: bold;
+        margin: 10px 0;
+        min-height: 1.5em;
+      }
+
+      .timer.warning {
+        color: #f56565;
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .rank-display {
+        font-size: 1.8em;
+        color: #4299e1;
+        font-weight: bold;
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #ebf8ff;
+        border-radius: 8px;
+        border: 2px solid #4299e1;
       }
 
       .board {
@@ -159,26 +213,25 @@
   </head>
   <body>
     <div class="game-container">
-      <h1>活动1 - 人机对战</h1>
-      <div class="controls">
-        <div class="difficulty-selector">
-          <label>AI难度:</label>
-          <select id="difficulty">
-            <option value="0">最弱 (难度0)</option>
-            <option value="1">极弱 (难度1)</option>
-            <option value="2" selected>较弱 (难度2)</option>
-            <option value="3">中等 (难度3)</option>
-            <option value="4">较强 (难度4)</option>
-            <option value="5">极强 (难度5)</option>
-          </select>
+      <h1>测试你的井字棋"段位"</h1>
+      <div class="game-info">
+        <div class="info-item">
+          <div class="info-label">当前难度</div>
+          <div class="info-value" id="current-difficulty">0</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">剩余机会</div>
+          <div class="info-value" id="remaining-chances">3</div>
         </div>
       </div>
       <div class="status" id="status">您的回合</div>
+      <div class="timer" id="timer"></div>
       <div
         class="status"
         id="thinking-time"
         style="font-size: 1em; min-height: 1.2em"
       ></div>
+      <div class="rank-display" id="rank-display" style="display: none;"></div>
       <div class="board" id="board">
         <div class="cell" data-index="0"></div>
         <div class="cell" data-index="1"></div>
@@ -191,6 +244,7 @@
         <div class="cell" data-index="8"></div>
       </div>
       <button id="restart">重新开始</button>
+      <button id="next-challenge" style="display: none;">下一局挑战</button>
 
       <!-- 新增的问题回答区域 -->
       <!-- <div class="questions-section">
@@ -230,12 +284,20 @@
         const boardElement = document.getElementById("board");
         const statusElement = document.getElementById("status");
         const restartButton = document.getElementById("restart");
-        const difficultySelect = document.getElementById("difficulty");
+        const nextChallengeButton = document.getElementById("next-challenge");
+        const currentDifficultyElement = document.getElementById("current-difficulty");
+        const remainingChancesElement = document.getElementById("remaining-chances");
+        const timerElement = document.getElementById("timer");
+        const rankDisplayElement = document.getElementById("rank-display");
 
         let board = ["", "", "", "", "", "", "", "", ""];
         let currentPlayer = "X"; // X is human, O is AI
         let gameActive = true;
         let aiThinking = false;
+        let currentDifficulty = 0;
+        let remainingChances = 3;
+        let timerInterval = null;
+        let timeLeft = 30;
 
         const winningConditions = [
           [0, 1, 2],
@@ -248,6 +310,41 @@
           [2, 4, 6], // 对角线
         ];
 
+        function startTimer() {
+          clearTimer();
+          timeLeft = 30;
+          updateTimerDisplay();
+          timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+              clearTimer();
+              // 时间到，自动判输
+              statusElement.textContent = "时间到！您输了！";
+              gameActive = false;
+              disableAllCells();
+              handleGameLoss();
+            }
+          }, 1000);
+        }
+
+        function clearTimer() {
+          if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+          }
+        }
+
+        function updateTimerDisplay() {
+          if (timeLeft <= 10) {
+            timerElement.textContent = `倒计时: ${timeLeft} 秒`;
+            timerElement.classList.add("warning");
+          } else {
+            timerElement.textContent = `倒计时: ${timeLeft} 秒`;
+            timerElement.classList.remove("warning");
+          }
+        }
+
         function handleCellClick(e) {
           if (!gameActive || currentPlayer !== "X" || aiThinking) return;
 
@@ -258,6 +355,7 @@
 
           // 立即绘制玩家棋子
           makeMove(index, "X");
+          clearTimer(); // 清除倒计时
 
           // 检查游戏是否因玩家落子而结束
           if (checkGameEnd()) return;
@@ -290,6 +388,11 @@
               clearInterval(timer);
               const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
               thinkingTimeElement.textContent = `AI 思考时间: ${elapsed} 秒`;
+              
+              // AI下完后，如果是玩家回合，启动倒计时
+              if (currentPlayer === "X" && gameActive) {
+                startTimer();
+              }
             }, 10);
           });
         }
@@ -332,13 +435,53 @@
           return !currentBoard.includes("");
         }
 
+        function handleGameWin() {
+          clearTimer();
+          statusElement.textContent = "恭喜您获胜！难度提升！";
+          // 难度提升
+          currentDifficulty++;
+          remainingChances = 3;
+          updateGameInfo();
+          nextChallengeButton.style.display = "inline-block";
+          restartButton.style.display = "none";
+        }
+
+        function handleGameLoss() {
+          clearTimer();
+          remainingChances--;
+          updateGameInfo();
+          
+          if (remainingChances <= 0) {
+            // 3次机会用完，显示段位评价
+            showRank();
+            nextChallengeButton.style.display = "none";
+            restartButton.style.display = "none";
+          } else {
+            statusElement.textContent = `您输了！还有 ${remainingChances} 次机会`;
+            nextChallengeButton.style.display = "inline-block";
+            restartButton.style.display = "none";
+          }
+        }
+
+        function showRank() {
+          rankDisplayElement.style.display = "block";
+          rankDisplayElement.textContent = `您的段位：${currentDifficulty} 段，请前往umu平台完成活动1问卷`;
+          statusElement.textContent = "挑战结束！";
+        }
+
+        function updateGameInfo() {
+          currentDifficultyElement.textContent = currentDifficulty;
+          remainingChancesElement.textContent = remainingChances;
+        }
+
         function checkGameEnd() {
           const winner = checkWin(board);
           if (winner) {
+            clearTimer();
             if (winner === "X") {
-              statusElement.textContent = "恭喜您获胜！";
+              handleGameWin();
             } else {
-              statusElement.textContent = "AI获胜！";
+              handleGameLoss();
             }
             gameActive = false;
             highlightWinningCells(winner);
@@ -346,7 +489,9 @@
             return true;
           }
           if (checkDraw(board)) {
-            statusElement.textContent = "平局！";
+            clearTimer();
+            // 平局算作失败
+            handleGameLoss();
             gameActive = false;
             disableAllCells();
             return true;
@@ -434,8 +579,8 @@
         function aiMove() {
           if (!gameActive) return;
 
-          // 验证并限制难度值范围
-          let maxDepth = parseInt(difficultySelect.value);
+          // 使用当前难度
+          let maxDepth = currentDifficulty;
           if (isNaN(maxDepth) || maxDepth < 0) maxDepth = 0;
           if (maxDepth > 5) maxDepth = 5;
 
@@ -501,6 +646,7 @@
           if (!checkGameEnd()) {
             currentPlayer = "X";
             statusElement.textContent = "您的回合";
+            startTimer(); // 玩家回合开始倒计时
           }
         }
 
@@ -512,13 +658,15 @@
           }
         }
 
-        function restartGame() {
+        function nextChallenge() {
           board = ["", "", "", "", "", "", "", "", ""];
           currentPlayer = "X";
           gameActive = true;
           aiThinking = false;
+          clearTimer();
 
           statusElement.textContent = "您的回合";
+          rankDisplayElement.style.display = "none";
           // Clear the thinking time display
           const thinkingTimeElement = document.getElementById("thinking-time");
           thinkingTimeElement.textContent = "";
@@ -528,11 +676,29 @@
             cell.classList.remove("x", "o");
             cell.style.backgroundColor = "";
           });
+          
+          nextChallengeButton.style.display = "none";
+          restartButton.style.display = "inline-block";
+          startTimer(); // 开始倒计时
+        }
+
+        function restartGame() {
+          // 重置所有游戏状态
+          currentDifficulty = 0;
+          remainingChances = 3;
+          updateGameInfo();
+          rankDisplayElement.style.display = "none";
+          nextChallenge();
         }
 
         // 事件监听
         boardElement.addEventListener("click", handleCellClick);
         restartButton.addEventListener("click", restartGame);
+        nextChallengeButton.addEventListener("click", nextChallenge);
+        
+        // 初始化游戏信息显示
+        updateGameInfo();
+        startTimer(); // 游戏开始时启动倒计时
       });
     </script>
   </body>
