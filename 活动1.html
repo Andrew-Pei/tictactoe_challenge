@@ -75,6 +75,11 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       }
 
+      .cell.disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
       .cell:hover {
         background-color: #e2e8f0;
       }
@@ -188,7 +193,7 @@
       <button id="restart">重新开始</button>
 
       <!-- 新增的问题回答区域 -->
-      <div class="questions-section">
+      <!-- <div class="questions-section">
         <h3>课堂思考问题</h3>
 
         <div class="question">
@@ -218,7 +223,7 @@
           ></textarea>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -249,7 +254,7 @@
           const cell = e.target;
           const index = parseInt(cell.getAttribute("data-index"));
 
-          if (board[index] !== "" || cell.textContent !== "") return;
+          if (board[index] !== "") return;
 
           // 立即绘制玩家棋子
           makeMove(index, "X");
@@ -276,14 +281,17 @@
           }, 100); // 每100毫秒更新一次
 
           // 使用setTimeout让UI有机会更新，然后执行AI思考
-          setTimeout(() => {
-            aiMove();
-            aiThinking = false;
-            // 停止计时器并显示最终时间
-            clearInterval(timer);
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
-            thinkingTimeElement.textContent = `AI 思考时间: ${elapsed} 秒`;
-          }, 10);
+          // 使用 requestAnimationFrame 确保在下一帧执行，让UI先更新
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              aiMove();
+              aiThinking = false;
+              // 停止计时器并显示最终时间
+              clearInterval(timer);
+              const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
+              thinkingTimeElement.textContent = `AI 思考时间: ${elapsed} 秒`;
+            }, 10);
+          });
         }
 
         function makeMove(index, player) {
@@ -295,8 +303,9 @@
 
         function simulateComputation(depth) {
           // 大幅增加计算负载，让差异更明显
-          // 使用指数增长来模拟组合爆炸
-          const iterations = Math.pow(2, depth) * 2000000;
+          // 使用指数增长来模拟组合爆炸，但限制最大迭代次数以避免浏览器长时间卡死
+          const maxIterations = 50000000; // 限制最大迭代次数（约5秒的计算量）
+          const iterations = Math.min(Math.pow(2, depth) * 2000000, maxIterations);
 
           let result = 0;
           for (let i = 0; i < iterations; i++) {
@@ -333,18 +342,51 @@
             }
             gameActive = false;
             highlightWinningCells(winner);
+            disableAllCells();
             return true;
           }
           if (checkDraw(board)) {
             statusElement.textContent = "平局！";
             gameActive = false;
+            disableAllCells();
             return true;
           }
           return false;
         }
 
+        function disableAllCells() {
+          // 游戏结束时禁用所有单元格
+          document.querySelectorAll(".cell").forEach((cell) => {
+            cell.classList.add("disabled");
+          });
+        }
+
+        function enableAllCells() {
+          // 重新开始时启用所有单元格
+          document.querySelectorAll(".cell").forEach((cell) => {
+            cell.classList.remove("disabled");
+          });
+        }
+
         function highlightWinningCells(winner) {
-          // 找到获胜组合
+          // 找到获胜组合（复用checkWin的逻辑）
+          const winningCondition = findWinningCondition(winner);
+          if (winningCondition) {
+            const [a, b, c] = winningCondition;
+            document.querySelector(
+              `[data-index="${a}"]`
+            ).style.backgroundColor = "#c6f6d5";
+            document.querySelector(
+              `[data-index="${b}"]`
+            ).style.backgroundColor = "#c6f6d5";
+            document.querySelector(
+              `[data-index="${c}"]`
+            ).style.backgroundColor = "#c6f6d5";
+          }
+        }
+
+        function findWinningCondition(winner) {
+          // 辅助函数：找到获胜的组合
           for (let condition of winningConditions) {
             const [a, b, c] = condition;
             if (
@@ -352,18 +394,10 @@
               board[a] === board[b] &&
               board[a] === board[c]
             ) {
-              document.querySelector(
-                `[data-index="${a}"]`
-              ).style.backgroundColor = "#c6f6d5";
-              document.querySelector(
-                `[data-index="${b}"]`
-              ).style.backgroundColor = "#c6f6d5";
-              document.querySelector(
-                `[data-index="${c}"]`
-              ).style.backgroundColor = "#c6f6d5";
-              return;
+              return condition;
             }
           }
+          return null;
         }
 
         function minimax(currentBoard, depth, isMaximizing, maxDepth) {
@@ -400,7 +434,10 @@
         function aiMove() {
           if (!gameActive) return;
 
-          const maxDepth = parseInt(difficultySelect.value);
+          // 验证并限制难度值范围
+          let maxDepth = parseInt(difficultySelect.value);
+          if (isNaN(maxDepth) || maxDepth < 0) maxDepth = 0;
+          if (maxDepth > 5) maxDepth = 5;
 
           let bestMove = -1;
           if (maxDepth === 0) {
@@ -485,6 +522,7 @@
           // Clear the thinking time display
           const thinkingTimeElement = document.getElementById("thinking-time");
           thinkingTimeElement.textContent = "";
+          enableAllCells();
           document.querySelectorAll(".cell").forEach((cell) => {
             cell.textContent = "";
             cell.classList.remove("x", "o");
