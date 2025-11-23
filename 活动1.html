@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>活动1</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        color: #4a5568;
+      }
+
+      .game-container {
+        text-align: center;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 500px;
+      }
+
+      h1 {
+        color: #2b3e50;
+        margin-bottom: 15px;
+        font-size: 2.2em;
+      }
+
+      .controls {
+        margin-bottom: 15px;
+      }
+
+      .difficulty-selector {
+        margin-bottom: 10px;
+      }
+
+      .difficulty-selector label {
+        display: inline-block;
+        width: 80px;
+        text-align: left;
+      }
+
+      .status {
+        font-size: 1.4em;
+        margin: 15px 0;
+        min-height: 1.5em;
+        font-weight: bold;
+        color: #334e68;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 10px;
+        margin: 20px auto;
+        max-width: 300px;
+      }
+
+      .cell {
+        width: 90px;
+        height: 90px;
+        background-color: #edf2f7;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2.5em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .cell:hover {
+        background-color: #e2e8f0;
+      }
+
+      .cell.x {
+        color: #e53e3e; /* 红色 */
+      }
+
+      .cell.o {
+        color: #3182ce; /* 蓝色 */
+      }
+
+      button {
+        background-color: #4299e1;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 1.1em;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #3182ce;
+      }
+
+      .thinking {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .questions-section {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f7fafc;
+        border-radius: 8px;
+        text-align: left;
+      }
+
+      .questions-section h3 {
+        color: #2b3e50;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #4299e1;
+        padding-bottom: 5px;
+      }
+
+      .question {
+        margin-bottom: 20px;
+      }
+
+      .question p {
+        font-weight: bold;
+        color: #4a5568;
+        margin-bottom: 8px;
+      }
+
+      .answer-box {
+        width: 100%;
+        min-height: 60px;
+        padding: 10px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 0.95em;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+
+      .answer-box:focus {
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>活动1 - 人机对战</h1>
+      <div class="controls">
+        <div class="difficulty-selector">
+          <label>AI难度:</label>
+          <select id="difficulty">
+            <option value="0">最弱 (难度0)</option>
+            <option value="1">极弱 (难度1)</option>
+            <option value="2" selected>较弱 (难度2)</option>
+            <option value="3">中等 (难度3)</option>
+            <option value="4">较强 (难度4)</option>
+            <option value="5">极强 (难度5)</option>
+          </select>
+        </div>
+      </div>
+      <div class="status" id="status">您的回合</div>
+      <div
+        class="status"
+        id="thinking-time"
+        style="font-size: 1em; min-height: 1.2em"
+      ></div>
+      <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+      <button id="restart">重新开始</button>
+
+      <!-- 新增的问题回答区域 -->
+      <div class="questions-section">
+        <h3>课堂思考问题</h3>
+
+        <div class="question">
+          <p>1. 从难度0到难度5，AI下棋时的思考时间有什么变化？</p>
+          <textarea
+            class="answer-box"
+            placeholder="请在此写下你的观察..."
+          ></textarea>
+        </div>
+
+        <div class="question">
+          <p>2. 你觉得不同难度的AI，在下棋特点上有什么变化？</p>
+          <textarea
+            class="answer-box"
+            placeholder="请在此写下你的发现..."
+          ></textarea>
+        </div>
+
+        <div class="question">
+          <p>
+            3.
+            你觉得AI在下棋时是如何思考的？是靠背棋谱？还是和我们一样依靠感觉和经验？抑或是有其他的办法？给出你的猜测。
+          </p>
+          <textarea
+            class="answer-box"
+            placeholder="请在此写下你的猜想..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const boardElement = document.getElementById("board");
+        const statusElement = document.getElementById("status");
+        const restartButton = document.getElementById("restart");
+        const difficultySelect = document.getElementById("difficulty");
+
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X"; // X is human, O is AI
+        let gameActive = true;
+        let aiThinking = false;
+
+        const winningConditions = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8], // 行
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8], // 列
+          [0, 4, 8],
+          [2, 4, 6], // 对角线
+        ];
+
+        function handleCellClick(e) {
+          if (!gameActive || currentPlayer !== "X" || aiThinking) return;
+
+          const cell = e.target;
+          const index = parseInt(cell.getAttribute("data-index"));
+
+          if (board[index] !== "" || cell.textContent !== "") return;
+
+          // 立即绘制玩家棋子
+          makeMove(index, "X");
+
+          // 检查游戏是否因玩家落子而结束
+          if (checkGameEnd()) return;
+
+          // AI回合
+          currentPlayer = "O";
+          statusElement.textContent = "AI 思考中...";
+          aiThinking = true;
+
+          // 添加这一行来获取显示思考时间的元素
+          const thinkingTimeElement = document.getElementById("thinking-time");
+          thinkingTimeElement.textContent = ""; // 清空之前的内容
+
+          // 记录开始时间
+          const startTime = Date.now();
+
+          // 启动定时器来更新显示的思考时间
+          const timer = setInterval(() => {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
+            thinkingTimeElement.textContent = `AI 思考时间: ${elapsed} 秒`;
+          }, 100); // 每100毫秒更新一次
+
+          // 使用setTimeout让UI有机会更新，然后执行AI思考
+          setTimeout(() => {
+            aiMove();
+            aiThinking = false;
+            // 停止计时器并显示最终时间
+            clearInterval(timer);
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
+            thinkingTimeElement.textContent = `AI 思考时间: ${elapsed} 秒`;
+          }, 10);
+        }
+
+        function makeMove(index, player) {
+          board[index] = player;
+          const cell = document.querySelector(`[data-index="${index}"]`);
+          cell.textContent = player;
+          cell.classList.add(player.toLowerCase());
+        }
+
+        function simulateComputation(depth) {
+          // 大幅增加计算负载，让差异更明显
+          // 使用指数增长来模拟组合爆炸
+          const iterations = Math.pow(2, depth) * 2000000;
+
+          let result = 0;
+          for (let i = 0; i < iterations; i++) {
+            result += Math.random(); // 模拟实际计算
+          }
+          return result;
+        }
+
+        function checkWin(currentBoard) {
+          for (let condition of winningConditions) {
+            const [a, b, c] = condition;
+            if (
+              currentBoard[a] &&
+              currentBoard[a] === currentBoard[b] &&
+              currentBoard[a] === currentBoard[c]
+            ) {
+              return currentBoard[a];
+            }
+          }
+          return null;
+        }
+
+        function checkDraw(currentBoard) {
+          return !currentBoard.includes("");
+        }
+
+        function checkGameEnd() {
+          const winner = checkWin(board);
+          if (winner) {
+            if (winner === "X") {
+              statusElement.textContent = "恭喜您获胜！";
+            } else {
+              statusElement.textContent = "AI获胜！";
+            }
+            gameActive = false;
+            highlightWinningCells(winner);
+            return true;
+          }
+          if (checkDraw(board)) {
+            statusElement.textContent = "平局！";
+            gameActive = false;
+            return true;
+          }
+          return false;
+        }
+
+        function highlightWinningCells(winner) {
+          // 找到获胜组合
+          for (let condition of winningConditions) {
+            const [a, b, c] = condition;
+            if (
+              board[a] === winner &&
+              board[a] === board[b] &&
+              board[a] === board[c]
+            ) {
+              document.querySelector(
+                `[data-index="${a}"]`
+              ).style.backgroundColor = "#c6f6d5";
+              document.querySelector(
+                `[data-index="${b}"]`
+              ).style.backgroundColor = "#c6f6d5";
+              document.querySelector(
+                `[data-index="${c}"]`
+              ).style.backgroundColor = "#c6f6d5";
+              return;
+            }
+          }
+        }
+
+        function minimax(currentBoard, depth, isMaximizing, maxDepth) {
+          const winner = checkWin(currentBoard);
+          if (winner === "O") return 10 - depth;
+          if (winner === "X") return depth - 10;
+          if (checkDraw(currentBoard) || depth >= maxDepth) return 0;
+
+          if (isMaximizing) {
+            let bestScore = -Infinity;
+            for (let i = 0; i < 9; i++) {
+              if (currentBoard[i] === "") {
+                currentBoard[i] = "O";
+                const score = minimax(currentBoard, depth + 1, false, maxDepth);
+                currentBoard[i] = "";
+                bestScore = Math.max(score, bestScore);
+              }
+            }
+            return bestScore;
+          } else {
+            let bestScore = Infinity;
+            for (let i = 0; i < 9; i++) {
+              if (currentBoard[i] === "") {
+                currentBoard[i] = "X";
+                const score = minimax(currentBoard, depth + 1, true, maxDepth);
+                currentBoard[i] = "";
+                bestScore = Math.min(score, bestScore);
+              }
+            }
+            return bestScore;
+          }
+        }
+
+        function aiMove() {
+          if (!gameActive) return;
+
+          const maxDepth = parseInt(difficultySelect.value);
+
+          let bestMove = -1;
+          if (maxDepth === 0) {
+            // 深度为0：随机选择一个空位
+            const emptyCells = [];
+            for (let i = 0; i < 9; i++) {
+              if (board[i] === "") {
+                emptyCells.push(i);
+              }
+            }
+            if (emptyCells.length > 0) {
+              // 随机选择一个空位
+              const randomIndex = Math.floor(Math.random() * emptyCells.length);
+              bestMove = emptyCells[randomIndex];
+            }
+          } else {
+            // 深度大于0：使用minimax算法前先模拟计算负载
+            simulateComputation(maxDepth);
+
+            let bestScore = -Infinity;
+            let moves = [];
+
+            // 收集所有空位
+            for (let i = 0; i < 9; i++) {
+              if (board[i] === "") {
+                moves.push(i);
+              }
+            }
+
+            // 随机打乱顺序以增加随机性（特别是在低难度时）
+            shuffleArray(moves);
+
+            // 寻找最佳移动
+            for (let i of moves) {
+              board[i] = "O";
+              const score = minimax(board, 0, false, maxDepth);
+              board[i] = "";
+              if (score > bestScore) {
+                bestScore = score;
+                bestMove = i;
+              }
+            }
+          }
+
+          // 如果没有找到最佳移动（理论上不会发生），则选择第一个空位
+          if (bestMove === -1) {
+            for (let i = 0; i < 9; i++) {
+              if (board[i] === "") {
+                bestMove = i;
+                break;
+              }
+            }
+          }
+
+          // 执行AI移动并绘制棋子
+          if (bestMove !== -1) {
+            makeMove(bestMove, "O");
+          }
+
+          // 检查游戏是否因AI落子而结束
+          if (!checkGameEnd()) {
+            currentPlayer = "X";
+            statusElement.textContent = "您的回合";
+          }
+        }
+
+        // 辅助函数：随机打乱数组
+        function shuffleArray(array) {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+        }
+
+        function restartGame() {
+          board = ["", "", "", "", "", "", "", "", ""];
+          currentPlayer = "X";
+          gameActive = true;
+          aiThinking = false;
+
+          statusElement.textContent = "您的回合";
+          // Clear the thinking time display
+          const thinkingTimeElement = document.getElementById("thinking-time");
+          thinkingTimeElement.textContent = "";
+          document.querySelectorAll(".cell").forEach((cell) => {
+            cell.textContent = "";
+            cell.classList.remove("x", "o");
+            cell.style.backgroundColor = "";
+          });
+        }
+
+        // 事件监听
+        boardElement.addEventListener("click", handleCellClick);
+        restartButton.addEventListener("click", restartGame);
+      });
+    </script>
+  </body>
+</html>
