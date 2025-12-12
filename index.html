@@ -333,7 +333,7 @@
         <h1>井字棋"段位"挑战</h1>
         <div class="game-info">
           <div class="info-item">
-            <div class="info-label">当前难度</div>
+            <div class="info-label">当前段位</div>
             <div class="info-value" id="current-difficulty">0</div>
           </div>
           <div class="info-item">
@@ -537,8 +537,8 @@
 
         function handleGameWin() {
           clearTimer();
-          statusElement.textContent = "恭喜您获胜！难度提升！";
-          // 难度提升
+          statusElement.textContent = "恭喜您获胜！段位提升！";
+          // 段位提升
           currentDifficulty++;
           remainingChances = 3;
           updateGameInfo();
@@ -569,7 +569,7 @@
         function formatDifficultyLabel(level) {
           const safeLevel = Math.max(0, level);
           const emoji = safeLevel === 0 ? "🌱" : "⭐".repeat(safeLevel);
-          return `${emoji}（难度 ${safeLevel}）`;
+          return `${emoji}（段位 ${safeLevel}）`;
         }
 
         function updateGameInfo() {
@@ -721,7 +721,7 @@
         function aiMove() {
           if (!gameActive) return;
 
-          // 使用当前难度
+          // 使用当前段位
           let maxDepth = currentDifficulty;
           if (isNaN(maxDepth) || maxDepth < 0) maxDepth = 0;
           if (maxDepth > 5) maxDepth = 5;
@@ -754,7 +754,7 @@
               }
             }
 
-            // 随机打乱顺序以增加随机性（特别是在低难度时）
+            // 随机打乱顺序以增加随机性（特别是在低段位时）
             shuffleArray(moves);
 
             // 寻找最佳移动
