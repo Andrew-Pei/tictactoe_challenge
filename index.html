@@ -22,7 +22,6 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         padding: 30px;
         width: 500px;
-        box-sizing: border-box;
       }
 
       h1 {
@@ -105,122 +104,6 @@
         background-color: #ebf8ff;
         border-radius: 8px;
         border: 2px solid #4299e1;
-      }
-
-      /* 右侧用时记录面板样式 */
-      .log-panel {
-        position: fixed;
-        right: 40px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 260px;
-        max-height: 95vh;
-        /* min-height: 320px; */
-        background-color: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        padding: 16px 18px;
-        box-sizing: border-box;
-        font-size: 0.9em;
-        color: #2d3748;
-        overflow-y: auto;
-        z-index: 10;
-      }
-
-      .log-title {
-        font-weight: bold;
-        font-size: 1.1em;
-        color: #2b3e50;
-        margin-bottom: 8px;
-      }
-
-      .log-subtitle {
-        font-size: 0.8em;
-        color: #718096;
-        margin-bottom: 10px;
-      }
-
-      .log-game-header {
-        margin-top: 10px;
-        margin-bottom: 4px;
-        font-weight: bold;
-        color: #3182ce;
-      }
-
-      .log-entry {
-        padding: 8px 10px;
-        border-radius: 8px;
-        background-color: #f7fafc;
-        margin-bottom: 8px;
-        border: 1px solid #e2e8f0;
-        line-height: 1.4;
-      }
-
-      .log-entry:last-child {
-        margin-bottom: 0;
-      }
-
-      .entry-meta {
-        font-size: 0.85em;
-        color: #718096;
-        margin-bottom: 4px;
-      }
-
-      .entry-body {
-        font-weight: bold;
-        color: #2d3748;
-      }
-
-      .entry-time {
-        font-size: 0.85em;
-        color: #805ad5;
-        margin-top: 2px;
-      }
-
-      .entry-bar-wrapper {
-        margin-top: 4px;
-        height: 6px;
-        background-color: #edf2f7;
-        border-radius: 999px;
-        overflow: hidden;
-      }
-
-      .entry-bar {
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #63b3ed, #805ad5);
-        width: 0;
-        transition: width 0.4s ease-out;
-      }
-
-      /* 突出显示 AI 思考时间区域 */
-      #thinking-time {
-        display: none; /* 默认不显示，避免一开始出现空框 */
-        font-size: 1.1em;
-        color: #805ad5;
-        font-weight: bold;
-        background-color: #faf5ff;
-        border-radius: 6px;
-        padding: 6px 10px;
-        border: 1px dashed #b794f4;
-        margin-top: 4px;
-        min-height: 1.4em;
-      }
-
-      .thinking-active {
-        animation: thinkingPulse 0.8s infinite;
-      }
-
-      @keyframes thinkingPulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(128, 90, 213, 0.6);
-        }
-        70% {
-          box-shadow: 0 0 0 8px rgba(128, 90, 213, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(128, 90, 213, 0);
-        }
       }
 
       .board {
@@ -326,66 +209,114 @@
         border-color: #4299e1;
         box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
       }
+
+      #submit-answers {
+        width: 100%;
+        margin-top: 15px;
+      }
+
+      #submit-status {
+        text-align: center;
+        min-height: 1.5em;
+      }
+
+      #submit-status.success {
+        color: #38a169;
+      }
+
+      #submit-status.error {
+        color: #e53e3e;
+      }
     </style>
   </head>
   <body>
     <div class="game-container">
-        <h1>井字棋"段位"挑战</h1>
-        <div class="game-info">
-          <div class="info-item">
-            <div class="info-label">当前段位</div>
-            <div class="info-value" id="current-difficulty">0</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">剩余机会</div>
-            <div class="info-value" id="remaining-chances">❤️❤️❤️</div>
-          </div>
+      <h1>井字棋"段位"挑战</h1>
+      <div class="game-info">
+        <div class="info-item">
+          <div class="info-label">当前难度</div>
+          <div class="info-value" id="current-difficulty">0</div>
         </div>
-        <div class="status" id="status">请点击“开始挑战”按钮开始游戏</div>
-        <div class="timer" id="timer"></div>
-        <button id="start-game">开始挑战</button>
-        <div
-          class="status"
-          id="thinking-time"
-        ></div>
-        <div class="rank-display" id="rank-display" style="display: none;"></div>
-        <div class="board" id="board">
-          <div class="cell" data-index="0"></div>
-          <div class="cell" data-index="1"></div>
-          <div class="cell" data-index="2"></div>
-          <div class="cell" data-index="3"></div>
-          <div class="cell" data-index="4"></div>
-          <div class="cell" data-index="5"></div>
-          <div class="cell" data-index="6"></div>
-          <div class="cell" data-index="7"></div>
-          <div class="cell" data-index="8"></div>
+        <div class="info-item">
+          <div class="info-label">剩余机会</div>
+          <div class="info-value" id="remaining-chances">3</div>
         </div>
-        <button id="next-challenge" style="display: none;">下一局挑战</button>
       </div>
+      <div class="status" id="status">您的回合</div>
+      <div class="timer" id="timer"></div>
+      <div
+        class="status"
+        id="thinking-time"
+        style="font-size: 1em; min-height: 1.2em"
+      ></div>
+      <div class="rank-display" id="rank-display" style="display: none;"></div>
+      <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+      <button id="restart">重新开始</button>
+      <button id="next-challenge" style="display: none;">下一局挑战</button>
 
-      <div class="log-panel" id="log-panel">
-        <div class="log-title">AI 思考用时记录</div>
-        <!-- 动态日志内容插入到这里 -->
+      <!-- 新增的问题回答区域 -->
+      <div class="questions-section" id="questions-section" style="display: none;">
+        <h3>课堂思考问题</h3>
+
+        <div class="question">
+          <p>1. 从难度0到难度5，AI下棋时的思考时间有什么变化？</p>
+          <textarea
+            class="answer-box"
+            id="answer-1"
+            placeholder="请在此写下你的观察..."
+          ></textarea>
+        </div>
+
+        <div class="question">
+          <p>2. 你觉得不同难度的AI，在下棋特点上有什么变化？</p>
+          <textarea
+            class="answer-box"
+            id="answer-2"
+            placeholder="请在此写下你的发现..."
+          ></textarea>
+        </div>
+
+        <div class="question">
+          <p>
+            3.
+            你觉得AI在下棋时是如何思考的？是靠背棋谱？还是和我们一样依靠感觉和经验？抑或是有其他的办法？给出你的猜测。
+          </p>
+          <textarea
+            class="answer-box"
+            id="answer-3"
+            placeholder="请在此写下你的猜想..."
+          ></textarea>
+        </div>
+        
+        <button id="submit-answers" style="margin-top: 15px;">提交答案</button>
+        <div id="submit-status" style="margin-top: 10px; color: #4299e1; font-weight: bold;"></div>
       </div>
+    </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const boardElement = document.getElementById("board");
         const statusElement = document.getElementById("status");
-        const startButton = document.getElementById("start-game");
+        const restartButton = document.getElementById("restart");
         const nextChallengeButton = document.getElementById("next-challenge");
         const currentDifficultyElement = document.getElementById("current-difficulty");
         const remainingChancesElement = document.getElementById("remaining-chances");
         const timerElement = document.getElementById("timer");
         const rankDisplayElement = document.getElementById("rank-display");
-        const logPanelElement = document.getElementById("log-panel");
 
         let board = ["", "", "", "", "", "", "", "", ""];
         let currentPlayer = "X"; // X is human, O is AI
-        let gameActive = false; // 初始不激活，等待点击“开始挑战”
-        let gameStarted = false; // 标记是否已经点击过开始
-        let gameIndex = 0; // 当前是第几局
-        let moveNumber = 0; // 当前局中第几步 AI 落子
+        let gameActive = true;
         let aiThinking = false;
         let currentDifficulty = 0;
         let remainingChances = 3;
@@ -461,8 +392,6 @@
           // 添加这一行来获取显示思考时间的元素
           const thinkingTimeElement = document.getElementById("thinking-time");
           thinkingTimeElement.textContent = ""; // 清空之前的内容
-          thinkingTimeElement.style.display = "inline-block";
-          thinkingTimeElement.classList.add("thinking-active");
 
           // 记录开始时间
           const startTime = Date.now();
@@ -482,12 +411,7 @@
               // 停止计时器并显示最终时间
               clearInterval(timer);
               const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
-              thinkingTimeElement.textContent = `🤖 AI 思考时间: ${elapsed} 秒`;
-              thinkingTimeElement.classList.remove("thinking-active");
-
-              // 记录本次 AI 落子的思考时间
-              logAiMoveTime(gameIndex, moveNumber + 1, currentDifficulty, elapsed);
-              moveNumber++;
+              thinkingTimeElement.textContent = `AI 思考时间: ${elapsed} 秒`;
               
               // AI下完后，如果是玩家回合，启动倒计时
               if (currentPlayer === "X" && gameActive) {
@@ -537,12 +461,13 @@
 
         function handleGameWin() {
           clearTimer();
-          statusElement.textContent = "恭喜您获胜！段位提升！";
-          // 段位提升
+          statusElement.textContent = "恭喜您获胜！难度提升！";
+          // 难度提升
           currentDifficulty++;
           remainingChances = 3;
           updateGameInfo();
           nextChallengeButton.style.display = "inline-block";
+          restartButton.style.display = "none";
         }
 
         function handleGameLoss() {
@@ -554,62 +479,26 @@
             // 3次机会用完，显示段位评价
             showRank();
             nextChallengeButton.style.display = "none";
+            restartButton.style.display = "none";
           } else {
             statusElement.textContent = `您输了！还有 ${remainingChances} 次机会`;
             nextChallengeButton.style.display = "inline-block";
+            restartButton.style.display = "none";
           }
         }
 
         function showRank() {
           rankDisplayElement.style.display = "block";
-          rankDisplayElement.innerHTML = `您的段位：${currentDifficulty} 段，请前往 <a href="https://www.umu.cn/course/index#/groups/7187322/sessions/57775916/view" target="_blank" rel="noopener noreferrer">UMU 平台</a> 完成活动1问卷`;
+          rankDisplayElement.textContent = `您的段位：${currentDifficulty} 段`;
           statusElement.textContent = "挑战结束！";
-        }
-
-        function formatDifficultyLabel(level) {
-          const safeLevel = Math.max(0, level);
-          const emoji = safeLevel === 0 ? "🌱" : "⭐".repeat(safeLevel);
-          return `${emoji}（段位 ${safeLevel}）`;
+          // 显示问题区域
+          const questionsSection = document.getElementById("questions-section");
+          questionsSection.style.display = "block";
         }
 
         function updateGameInfo() {
-          currentDifficultyElement.textContent = formatDifficultyLabel(
-            currentDifficulty
-          );
-          // 使用红心 emoji 显示剩余机会，更直观有趣
-          remainingChancesElement.textContent = "❤️".repeat(
-            Math.max(0, remainingChances)
-          );
-        }
-
-        // 记录 AI 每一步思考时间到右侧面板
-        function logAiMoveTime(gameIdx, moveIdx, difficulty, elapsedSeconds) {
-          if (!logPanelElement || gameIdx <= 0) return;
-          const entry = document.createElement("div");
-          entry.className = "log-entry";
-          const difficultyLabel = formatDifficultyLabel(difficulty);
-          // 以 5 秒为基准生成长度条，最长不超过 100%
-          const maxSeconds = 0.5;
-          const clamped = Math.min(parseFloat(elapsedSeconds) || 0, maxSeconds);
-          const percent = (clamped / maxSeconds) * 100;
-          entry.innerHTML = `
-            <div class="entry-body">${difficultyLabel}</div>
-            <div class="entry-time">⏱ ${elapsedSeconds} 秒</div>
-            <div class="entry-bar-wrapper">
-              <div class="entry-bar" style="width: ${percent}%;"></div>
-            </div>
-          `;
-          logPanelElement.appendChild(entry);
-          logPanelElement.scrollTop = logPanelElement.scrollHeight;
-        }
-
-        // 每一局开始时添加一个小标题
-        function addGameHeader(gameIdx) {
-          if (!logPanelElement || gameIdx <= 0) return;
-          const header = document.createElement("div");
-          header.className = "log-game-header";
-          header.textContent = `第 ${gameIdx} 局`;
-          logPanelElement.appendChild(header);
+          currentDifficultyElement.textContent = currentDifficulty;
+          remainingChancesElement.textContent = remainingChances;
         }
 
         function checkGameEnd() {
@@ -628,12 +517,8 @@
           }
           if (checkDraw(board)) {
             clearTimer();
-            // 平局算作失败：本活动中，平局也算未能战胜 AI，会扣一次机会
+            // 平局算作失败
             handleGameLoss();
-            // 如果还有机会，用更明确的平局提示文案
-            if (remainingChances > 0) {
-              statusElement.textContent = `平局了！还有 ${remainingChances} 次机会`;
-            }
             gameActive = false;
             disableAllCells();
             return true;
@@ -721,7 +606,7 @@
         function aiMove() {
           if (!gameActive) return;
 
-          // 使用当前段位
+          // 使用当前难度
           let maxDepth = currentDifficulty;
           if (isNaN(maxDepth) || maxDepth < 0) maxDepth = 0;
           if (maxDepth > 5) maxDepth = 5;
@@ -754,7 +639,7 @@
               }
             }
 
-            // 随机打乱顺序以增加随机性（特别是在低段位时）
+            // 随机打乱顺序以增加随机性（特别是在低难度时）
             shuffleArray(moves);
 
             // 寻找最佳移动
@@ -812,8 +697,6 @@
           // Clear the thinking time display
           const thinkingTimeElement = document.getElementById("thinking-time");
           thinkingTimeElement.textContent = "";
-          thinkingTimeElement.classList.remove("thinking-active");
-          thinkingTimeElement.style.display = "none";
           enableAllCells();
           document.querySelectorAll(".cell").forEach((cell) => {
             cell.textContent = "";
@@ -822,35 +705,85 @@
           });
           
           nextChallengeButton.style.display = "none";
+          restartButton.style.display = "inline-block";
           startTimer(); // 开始倒计时
-
-          // 新的一局，步数从 0 开始计数并在右侧添加标题
-          gameIndex++;
-          moveNumber = 0;
-          addGameHeader(gameIndex);
         }
 
-        function startGame() {
-          if (gameStarted) return;
-          gameStarted = true;
-          gameActive = true;
-          statusElement.textContent = "您的回合";
-          startButton.style.display = "none";
-          startTimer();
-
-          // 第一次开始游戏，视为第 1 局
-          gameIndex = 1;
-          moveNumber = 0;
-          addGameHeader(gameIndex);
+        function restartGame() {
+          // 重置所有游戏状态
+          currentDifficulty = 0;
+          remainingChances = 3;
+          updateGameInfo();
+          rankDisplayElement.style.display = "none";
+          nextChallenge();
         }
 
-         // 事件监听
+        // 提交答案功能
+        const submitAnswersButton = document.getElementById("submit-answers");
+        const submitStatusElement = document.getElementById("submit-status");
+        
+        async function submitAnswers() {
+          const answer1 = document.getElementById("answer-1").value.trim();
+          const answer2 = document.getElementById("answer-2").value.trim();
+          const answer3 = document.getElementById("answer-3").value.trim();
+          
+          if (!answer1 || !answer2 || !answer3) {
+            submitStatusElement.textContent = "请完整回答所有3个问题";
+            submitStatusElement.className = "error";
+            return;
+          }
+          
+          submitAnswersButton.disabled = true;
+          submitStatusElement.textContent = "正在提交...";
+          submitStatusElement.className = "";
+          
+          try {
+            // 自动检测API地址（生产环境使用相对路径，开发环境使用localhost）
+            const apiUrl = window.location.hostname === 'localhost' 
+              ? 'http://localhost:3000/api/submit-answers'
+              : '/api/submit-answers';
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                rank: currentDifficulty,
+                answers: {
+                  question1: answer1,
+                  question2: answer2,
+                  question3: answer3,
+                },
+                timestamp: new Date().toISOString(),
+              }),
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+              submitStatusElement.textContent = "答案提交成功！";
+              submitStatusElement.className = "success";
+              submitAnswersButton.style.display = "none";
+            } else {
+              throw new Error(data.error || "提交失败");
+            }
+          } catch (error) {
+            submitStatusElement.textContent = `提交失败：${error.message}`;
+            submitStatusElement.className = "error";
+            submitAnswersButton.disabled = false;
+          }
+        }
+        
+        submitAnswersButton.addEventListener("click", submitAnswers);
+
+        // 事件监听
         boardElement.addEventListener("click", handleCellClick);
-        startButton.addEventListener("click", startGame);
+        restartButton.addEventListener("click", restartGame);
         nextChallengeButton.addEventListener("click", nextChallenge);
         
-        // 初始化游戏信息显示（不立即开始倒计时，等待玩家点击“开始挑战”）
+        // 初始化游戏信息显示
         updateGameInfo();
+        startTimer(); // 游戏开始时启动倒计时
       });
     </script>
   </body>

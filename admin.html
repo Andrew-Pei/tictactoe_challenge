@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>后台管理 - 答案查看</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+        padding: 20px;
+        color: #4a5568;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+      }
+
+      h1 {
+        color: #2b3e50;
+        margin-bottom: 10px;
+        font-size: 2.2em;
+        border-bottom: 3px solid #4299e1;
+        padding-bottom: 10px;
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+
+      .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .stat-card h3 {
+        font-size: 0.9em;
+        margin-bottom: 10px;
+        opacity: 0.9;
+      }
+
+      .stat-card .value {
+        font-size: 2em;
+        font-weight: bold;
+      }
+
+      .controls {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background-color: #4299e1;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #3182ce;
+      }
+
+      button:disabled {
+        background-color: #cbd5e0;
+        cursor: not-allowed;
+      }
+
+      .status-message {
+        padding: 10px;
+        border-radius: 6px;
+        margin: 10px 0;
+        display: none;
+      }
+
+      .status-message.success {
+        background-color: #c6f6d5;
+        color: #22543d;
+        display: block;
+      }
+
+      .status-message.error {
+        background-color: #fed7d7;
+        color: #742a2a;
+        display: block;
+      }
+
+      .status-message.info {
+        background-color: #bee3f8;
+        color: #2c5282;
+        display: block;
+      }
+
+      .submissions-container {
+        margin-top: 30px;
+      }
+
+      .submission-card {
+        background-color: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: box-shadow 0.3s;
+      }
+
+      .submission-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .submission-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .submission-id {
+        font-size: 0.85em;
+        color: #718096;
+      }
+
+      .rank-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      .timestamp {
+        color: #718096;
+        font-size: 0.9em;
+      }
+
+      .questions-list {
+        margin-top: 15px;
+      }
+
+      .question-item {
+        margin-bottom: 15px;
+        padding: 15px;
+        background-color: white;
+        border-left: 4px solid #4299e1;
+        border-radius: 4px;
+      }
+
+      .question-item h4 {
+        color: #2b3e50;
+        margin-bottom: 8px;
+        font-size: 1em;
+      }
+
+      .question-item .answer {
+        color: #4a5568;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #718096;
+      }
+
+      .empty-state svg {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #4299e1;
+        font-size: 1.2em;
+      }
+
+      .filter-section {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f7fafc;
+        border-radius: 8px;
+      }
+
+      .filter-section label {
+        margin-right: 10px;
+        color: #4a5568;
+        font-weight: bold;
+      }
+
+      .filter-section select {
+        padding: 8px 12px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        font-size: 1em;
+        margin-right: 15px;
+      }
+
+      .filter-section select:focus {
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📊 后台管理 - 答案查看</h1>
+
+      <div class="stats">
+        <div class="stat-card">
+          <h3>总提交数</h3>
+          <div class="value" id="total-count">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #38a169, #2f855a);">
+          <h3>平均段位</h3>
+          <div class="value" id="avg-rank">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #ed8936, #dd6b20);">
+          <h3>最高段位</h3>
+          <div class="value" id="max-rank">0</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="refresh-btn">🔄 刷新数据</button>
+        <button id="export-btn">📥 导出数据</button>
+        <div class="filter-section">
+          <label for="rank-filter">筛选段位:</label>
+          <select id="rank-filter">
+            <option value="all">全部</option>
+            <option value="0">0段</option>
+            <option value="1">1段</option>
+            <option value="2">2段</option>
+            <option value="3">3段</option>
+            <option value="4">4段</option>
+            <option value="5">5段</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="status-message" id="status-message"></div>
+
+      <div class="submissions-container" id="submissions-container">
+        <div class="loading">正在加载数据...</div>
+      </div>
+    </div>
+
+    <script>
+      // 自动检测API地址（生产环境使用相对路径，开发环境使用localhost）
+      const API_BASE = window.location.hostname === 'localhost' 
+        ? "http://localhost:3000/api"
+        : "/api";
+      let allSubmissions = [];
+
+      // DOM元素
+      const submissionsContainer = document.getElementById("submissions-container");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const exportBtn = document.getElementById("export-btn");
+      const rankFilter = document.getElementById("rank-filter");
+      const statusMessage = document.getElementById("status-message");
+      const totalCountEl = document.getElementById("total-count");
+      const avgRankEl = document.getElementById("avg-rank");
+      const maxRankEl = document.getElementById("max-rank");
+
+      // 显示状态消息
+      function showMessage(message, type = "info") {
+        statusMessage.textContent = message;
+        statusMessage.className = `status-message ${type}`;
+        setTimeout(() => {
+          statusMessage.className = "status-message";
+        }, 3000);
+      }
+
+      // 加载数据
+      async function loadSubmissions() {
+        try {
+          submissionsContainer.innerHTML = '<div class="loading">正在加载数据...</div>';
+          refreshBtn.disabled = true;
+
+          const response = await fetch(`${API_BASE}/submissions`);
+          const data = await response.json();
+
+          if (data.success) {
+            allSubmissions = data.submissions || [];
+            updateStats();
+            filterAndDisplaySubmissions();
+            showMessage(`成功加载 ${allSubmissions.length} 条数据`, "success");
+          } else {
+            throw new Error(data.error || "加载失败");
+          }
+        } catch (error) {
+          submissionsContainer.innerHTML = `
+            <div class="empty-state">
+              <p style="color: #e53e3e; font-size: 1.2em;">❌ 加载失败</p>
+              <p>${error.message}</p>
+              <p style="margin-top: 10px; font-size: 0.9em;">请确保后端服务器正在运行</p>
+            </div>
+          `;
+          showMessage(`加载失败: ${error.message}`, "error");
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      }
+
+      // 更新统计信息
+      function updateStats() {
+        totalCountEl.textContent = allSubmissions.length;
+
+        if (allSubmissions.length > 0) {
+          const ranks = allSubmissions.map((s) => s.rank);
+          const sum = ranks.reduce((a, b) => a + b, 0);
+          const avg = (sum / ranks.length).toFixed(1);
+          avgRankEl.textContent = avg;
+
+          const max = Math.max(...ranks);
+          maxRankEl.textContent = max;
+        } else {
+          avgRankEl.textContent = "0";
+          maxRankEl.textContent = "0";
+        }
+      }
+
+      // 筛选并显示提交
+      function filterAndDisplaySubmissions() {
+        const selectedRank = rankFilter.value;
+        let filtered = allSubmissions;
+
+        if (selectedRank !== "all") {
+          filtered = allSubmissions.filter((s) => s.rank === parseInt(selectedRank));
+        }
+
+        // 按时间倒序排序
+        filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        if (filtered.length === 0) {
+          submissionsContainer.innerHTML = `
+            <div class="empty-state">
+              <p>📭 暂无数据</p>
+              <p style="margin-top: 10px;">当前筛选条件下没有找到提交记录</p>
+            </div>
+          `;
+          return;
+        }
+
+        submissionsContainer.innerHTML = filtered
+          .map((submission) => {
+            const date = new Date(submission.timestamp);
+            const dateStr = date.toLocaleString("zh-CN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            });
+
+            return `
+            <div class="submission-card">
+              <div class="submission-header">
+                <div>
+                  <span class="rank-badge">${submission.rank} 段</span>
+                  <span class="submission-id" style="margin-left: 10px;">ID: ${submission.id}</span>
+                </div>
+                <div class="timestamp">${dateStr}</div>
+              </div>
+              <div class="questions-list">
+                <div class="question-item">
+                  <h4>问题1: 从难度0到难度5，AI下棋时的思考时间有什么变化？</h4>
+                  <div class="answer">${escapeHtml(submission.answers.question1)}</div>
+                </div>
+                <div class="question-item">
+                  <h4>问题2: 你觉得不同难度的AI，在下棋特点上有什么变化？</h4>
+                  <div class="answer">${escapeHtml(submission.answers.question2)}</div>
+                </div>
+                <div class="question-item">
+                  <h4>问题3: 你觉得AI在下棋时是如何思考的？是靠背棋谱？还是和我们一样依靠感觉和经验？抑或是有其他的办法？给出你的猜测。</h4>
+                  <div class="answer">${escapeHtml(submission.answers.question3)}</div>
+                </div>
+              </div>
+            </div>
+          `;
+          })
+          .join("");
+      }
+
+      // HTML转义
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // 导出数据
+      function exportData() {
+        const dataStr = JSON.stringify(allSubmissions, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `answers_${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showMessage("数据导出成功", "success");
+      }
+
+      // 事件监听
+      refreshBtn.addEventListener("click", loadSubmissions);
+      exportBtn.addEventListener("click", exportData);
+      rankFilter.addEventListener("change", filterAndDisplaySubmissions);
+
+      // 页面加载时自动加载数据
+      loadSubmissions();
+
+      // 每30秒自动刷新
+      setInterval(loadSubmissions, 30000);
+    </script>
+  </body>
+</html>
