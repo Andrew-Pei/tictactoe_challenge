@@ -1,0 +1,19 @@
+{
+  "name": "tictactoe-challenge",
+  "version": "1.0.0",
+  "description": "井字棋段位挑战 - 后端服务器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "tictactoe",
+    "challenge"
+  ],
+  "author": "",
+  "license": "ISC"
+}

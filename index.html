@@ -209,6 +209,24 @@
         border-color: #4299e1;
         box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
       }
+
+      #submit-answers {
+        width: 100%;
+        margin-top: 15px;
+      }
+
+      #submit-status {
+        text-align: center;
+        min-height: 1.5em;
+      }
+
+      #submit-status.success {
+        color: #38a169;
+      }
+
+      #submit-status.error {
+        color: #e53e3e;
+      }
     </style>
   </head>
   <body>
@@ -247,13 +265,14 @@
       <button id="next-challenge" style="display: none;">下一局挑战</button>
 
       <!-- 新增的问题回答区域 -->
-      <!-- <div class="questions-section">
+      <div class="questions-section" id="questions-section" style="display: none;">
         <h3>课堂思考问题</h3>
 
         <div class="question">
           <p>1. 从难度0到难度5，AI下棋时的思考时间有什么变化？</p>
           <textarea
             class="answer-box"
+            id="answer-1"
             placeholder="请在此写下你的观察..."
           ></textarea>
         </div>
@@ -262,6 +281,7 @@
           <p>2. 你觉得不同难度的AI，在下棋特点上有什么变化？</p>
           <textarea
             class="answer-box"
+            id="answer-2"
             placeholder="请在此写下你的发现..."
           ></textarea>
         </div>
@@ -273,11 +293,15 @@
           </p>
           <textarea
             class="answer-box"
+            id="answer-3"
             placeholder="请在此写下你的猜想..."
           ></textarea>
         </div>
+        
+        <button id="submit-answers" style="margin-top: 15px;">提交答案</button>
+        <div id="submit-status" style="margin-top: 10px; color: #4299e1; font-weight: bold;"></div>
       </div>
-    </div> -->
+    </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -465,8 +489,11 @@
 
         function showRank() {
           rankDisplayElement.style.display = "block";
-          rankDisplayElement.textContent = `您的段位：${currentDifficulty} 段，请前往umu平台完成活动1问卷`;
+          rankDisplayElement.textContent = `您的段位：${currentDifficulty} 段`;
           statusElement.textContent = "挑战结束！";
+          // 显示问题区域
+          const questionsSection = document.getElementById("questions-section");
+          questionsSection.style.display = "block";
         }
 
         function updateGameInfo() {
@@ -690,6 +717,64 @@
           rankDisplayElement.style.display = "none";
           nextChallenge();
         }
+
+        // 提交答案功能
+        const submitAnswersButton = document.getElementById("submit-answers");
+        const submitStatusElement = document.getElementById("submit-status");
+        
+        async function submitAnswers() {
+          const answer1 = document.getElementById("answer-1").value.trim();
+          const answer2 = document.getElementById("answer-2").value.trim();
+          const answer3 = document.getElementById("answer-3").value.trim();
+          
+          if (!answer1 || !answer2 || !answer3) {
+            submitStatusElement.textContent = "请完整回答所有3个问题";
+            submitStatusElement.className = "error";
+            return;
+          }
+          
+          submitAnswersButton.disabled = true;
+          submitStatusElement.textContent = "正在提交...";
+          submitStatusElement.className = "";
+          
+          try {
+            // 自动检测API地址（生产环境使用相对路径，开发环境使用localhost）
+            const apiUrl = window.location.hostname === 'localhost' 
+              ? 'http://localhost:3000/api/submit-answers'
+              : '/api/submit-answers';
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                rank: currentDifficulty,
+                answers: {
+                  question1: answer1,
+                  question2: answer2,
+                  question3: answer3,
+                },
+                timestamp: new Date().toISOString(),
+              }),
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+              submitStatusElement.textContent = "答案提交成功！";
+              submitStatusElement.className = "success";
+              submitAnswersButton.style.display = "none";
+            } else {
+              throw new Error(data.error || "提交失败");
+            }
+          } catch (error) {
+            submitStatusElement.textContent = `提交失败：${error.message}`;
+            submitStatusElement.className = "error";
+            submitAnswersButton.disabled = false;
+          }
+        }
+        
+        submitAnswersButton.addEventListener("click", submitAnswers);
 
         // 事件监听
         boardElement.addEventListener("click", handleCellClick);
